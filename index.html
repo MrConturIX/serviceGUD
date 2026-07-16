@@ -29,7 +29,7 @@
   .mono{font-family:'Space Grotesk',monospace}
 
   /* ---- Animated background ---- */
-  #bgcanvas{position:fixed;inset:0;z-index:0;pointer-events:none;-webkit-mask-image:radial-gradient(ellipse 52% 42% at 50% 42%,rgba(0,0,0,.55),#000 78%);mask-image:radial-gradient(ellipse 52% 42% at 50% 42%,rgba(0,0,0,.55),#000 78%)}
+  #bgcanvas{position:fixed;inset:0;z-index:0;pointer-events:none;-webkit-mask-image:radial-gradient(ellipse 52% 42% at 50% 42%,rgba(0,0,0,.60),#000 76%);mask-image:radial-gradient(ellipse 52% 42% at 50% 42%,rgba(0,0,0,.60),#000 76%)}
   .orb{position:fixed;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none;opacity:.55}
   .orb.a{width:520px;height:520px;background:radial-gradient(circle,rgba(47,217,239,.28),transparent 68%);top:-140px;right:-120px;animation:drift1 22s ease-in-out infinite}
   .orb.b{width:600px;height:600px;background:radial-gradient(circle,rgba(90,60,200,.18),transparent 68%);bottom:-200px;left:-160px;animation:drift2 28s ease-in-out infinite}
@@ -499,81 +499,64 @@
   const cur=document.getElementById('cursor');
   if(matchMedia('(hover:hover)').matches){addEventListener('mousemove',e=>{cur.style.opacity=1;cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
 
-  /* ===== Фон: ретро-гонка (в духе «тетрис»-гонок) ===== */
+  /* ===== Фон: ночная трасса — световые следы фар (длинная выдержка) ===== */
   (function(){
     const c=document.getElementById('bgcanvas');if(!c)return;
     const ctx=c.getContext('2d');if(!ctx)return;
-    let W,H,DPR,laneW,laneCount,cars=[],dash=0,raf=0,last=0;
-    const SHAPE=[[0,1,0],[1,1,1],[0,1,0],[1,1,1]];
-    let B,G,CW,CH;
-    function metrics(){B=5*DPR;G=1*DPR;CW=3*(B+G)-G;CH=SHAPE.length*(B+G)-G;}
-    function mkCar(spread){
-      const lane=Math.floor(Math.random()*laneCount);
-      return{x:lane*laneW+laneW/2,
-             y:spread?Math.random()*H:-CH-Math.random()*H*.7,
-             sp:(.8+Math.random()*2.4)*DPR,
-             a:.32+Math.random()*.46,
-             white:Math.random()<.18};
+    let W,H,DPR,tr=[],raf=0,last=0;
+    function mk(spread){
+      const depth=Math.random();                 // 0 — далеко, 1 — рядом
+      const dir=Math.random()<.5?1:-1;
+      const L=(140+depth*620)*DPR;               // ближе — длиннее след
+      return{y:Math.random()*H,
+             x:spread?Math.random()*(W+2*L)-L:(dir>0?-2:W+2),
+             L,dir,
+             w:(1+depth*2.6)*DPR,                // и толще
+             a:.22+depth*.62,                    // и ярче
+             sp:(.35+depth*2.2)*dir*DPR,         // и быстрее — это даёт глубину
+             white:Math.random()<.22};
     }
-    function spawnAll(){cars=[];const n=Math.min(46,Math.max(14,Math.round(laneCount*1.5)));for(let i=0;i<n;i++)cars.push(mkCar(true));}
+    function spawnAll(){
+      const n=Math.min(34,Math.max(14,Math.round(innerWidth*innerHeight/50000)));
+      tr=[];for(let i=0;i<n;i++)tr.push(mk(true));
+    }
     function resize(){
       DPR=Math.min(2,devicePixelRatio||1);
       W=c.width=Math.floor(innerWidth*DPR);H=c.height=Math.floor(innerHeight*DPR);
       c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';
-      metrics();
-      laneW=Math.max(46,Math.min(78,innerWidth/18))*DPR;
-      laneCount=Math.max(3,Math.ceil(W/laneW));
       spawnAll();
-    }
-    function drawCar(car){
-      const x0=car.x-CW/2,y0=car.y;
-      const rgb=car.white?'255,255,255':'47,217,239';
-      const tl=car.sp*24;                                  // след: длина зависит от скорости
-      if(tl>2&&isFinite(y0)){
-        try{
-          const g=ctx.createLinearGradient(0,y0-tl,0,y0+CH*.5);
-          g.addColorStop(0,'rgba('+rgb+',0)');
-          g.addColorStop(1,'rgba('+rgb+','+(car.a*.5).toFixed(3)+')');
-          ctx.save();ctx.shadowBlur=0;ctx.fillStyle=g;
-          ctx.fillRect(car.x-B*.85,y0-tl,B*1.7,tl+CH*.5);
-          ctx.restore();
-        }catch(e){}
-      }
-      ctx.shadowColor='rgba('+rgb+',.85)';
-      ctx.shadowBlur=7*DPR;
-      ctx.fillStyle='rgba('+rgb+','+car.a.toFixed(3)+')';
-      for(let r=0;r<SHAPE.length;r++)for(let q=0;q<3;q++){
-        if(SHAPE[r][q])ctx.fillRect(x0+q*(B+G),y0+r*(B+G),B,B);
-      }
     }
     function loop(){
       last=performance.now();
       try{
         ctx.clearRect(0,0,W,H);
-        ctx.save();                                        // разметка полос
-        ctx.strokeStyle='rgba(47,217,239,.14)';ctx.lineWidth=1.2*DPR;
-        ctx.setLineDash([16*DPR,22*DPR]);ctx.lineDashOffset=-dash;
-        for(let i=1;i<laneCount;i++){const x=i*laneW;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-        ctx.restore();
-        dash+=1.8*DPR;
-        ctx.save();                                        // машинки — едут всегда
-        for(const car of cars){
-          car.y+=car.sp;
-          if(car.y>H+CH)Object.assign(car,mkCar(false));
-          drawCar(car);
+        ctx.globalCompositeOperation='lighter';   // свет складывается, как на длинной выдержке
+        ctx.lineCap='round';
+        for(const p of tr){
+          p.x+=p.sp;
+          if(p.dir>0?(p.x-p.L>W):(p.x+p.L<0)){Object.assign(p,mk(false));continue;}
+          const tx=p.x-p.L*p.dir;                 // хвост
+          if(!isFinite(tx))continue;
+          const rgb=p.white?'255,255,255':'47,217,239';
+          const g=ctx.createLinearGradient(tx,p.y,p.x,p.y);
+          g.addColorStop(0,'rgba('+rgb+',0)');
+          g.addColorStop(.72,'rgba('+rgb+','+(p.a*.35).toFixed(3)+')');
+          g.addColorStop(1,'rgba('+rgb+','+p.a.toFixed(3)+')');
+          ctx.strokeStyle=g;ctx.lineWidth=p.w;
+          ctx.shadowColor='rgba('+rgb+',.5)';ctx.shadowBlur=7*DPR;
+          ctx.beginPath();ctx.moveTo(tx,p.y);ctx.lineTo(p.x,p.y);ctx.stroke();
         }
-        ctx.restore();
+        ctx.shadowBlur=0;
+        ctx.globalCompositeOperation='source-over';
       }catch(e){}
       raf=requestAnimationFrame(loop);
     }
     resize();
     addEventListener('resize',resize);
     raf=requestAnimationFrame(loop);
-    // страховка: если цикл вдруг встал — сам перезапустится
     setInterval(function(){if(!document.hidden&&performance.now()-last>900){cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}},1200);
     document.addEventListener('visibilitychange',function(){if(!document.hidden){cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}});
-    console.log('[GUD] фон: машинок '+cars.length+', полос '+laneCount+
-                ', reduced-motion='+matchMedia('(prefers-reduced-motion: reduce)').matches);
+    console.log('[GUD] фон: световых следов '+tr.length);
   })();
 </script>
 </body>

@@ -486,7 +486,7 @@
 
   /* ===== Supabase — отзывы и онлайн-запись ===== */
   const SUPABASE = {
-    url: "ВСТАВЬ_СЮДА_URL_ПРОЕКТА",      // Supabase -> Settings -> API -> Project URL
+    url: "https://zrloityglamhazivrttd.supabase.co",   // проект сайта (отдельный от CRM)
     anonKey: "ВСТАВЬ_СЮДА_ANON_КЛЮЧ"     // Supabase -> Settings -> API -> anon public
   };
 
@@ -586,7 +586,7 @@
     // дата — не раньше сегодня
     if(dt){const n=new Date();n.setMinutes(n.getMinutes()-n.getTimezoneOffset());dt.min=n.toISOString().slice(0,10);}
 
-    const ready=()=>SUPABASE.url && SUPABASE.anonKey && !/ВСТАВЬ/.test(SUPABASE.url) && !/ВСТАВЬ/.test(SUPABASE.anonKey);
+    const ready=()=>SUPABASE.url && SUPABASE.anonKey && !/ВСТАВЬ/.test(SUPABASE.url) && !/ВСТАВЬ/.test(SUPABASE.anonKey) && !/^sb_secret_/.test(SUPABASE.anonKey);
     const hdr=extra=>Object.assign({apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey},extra||{});
     const fail=m=>{msg.textContent=m;msg.className='form-msg err';};
 
@@ -599,6 +599,7 @@
       if(!visit_time)   return fail('Выберите время.');
       if(!name)         return fail('Укажите имя и фамилию.');
       if(!phone||phone.replace(/\D/g,'').length<6) return fail('Укажите корректный телефон.');
+      if(/^sb_secret_/.test(SUPABASE.anonKey)) return fail('В настройках указан секретный ключ — нужен publishable/anon.');
       if(!ready())      return fail('Онлайн-запись ещё не подключена к базе (запусти supabase.sql и вставь ключ).');
       const btn=$('bookBtn'), old=btn.textContent; btn.disabled=true; btn.textContent='Отправляем…';
       try{
@@ -632,26 +633,29 @@
   const cur=document.getElementById('cursor');
   if(matchMedia('(hover:hover)').matches){addEventListener('mousemove',e=>{cur.style.opacity=1;cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
 
-  /* ===== Фон: ночная трасса — световые следы фар (длинная выдержка) ===== */
+  /* ===== Фон: дрейфующие колёса — инженерная схема/голограмма ===== */
   (function(){
     const c=document.getElementById('bgcanvas');if(!c)return;
     const ctx=c.getContext('2d');if(!ctx)return;
-    let W,H,DPR,tr=[],raf=0,last=0;
+    let W,H,DPR,wh=[],raf=0,last=0;
+    const SPOKES=6;
     function mk(spread){
-      const depth=Math.random();                 // 0 — далеко, 1 — рядом
+      const depth=Math.random();                     // 0 — далеко, 1 — рядом
       const dir=Math.random()<.5?1:-1;
-      const L=(140+depth*620)*DPR;               // ближе — длиннее след
+      const r=(46+depth*144)*DPR;                     // ближе — крупнее
       return{y:Math.random()*H,
-             x:spread?Math.random()*(W+2*L)-L:(dir>0?-2:W+2),
-             L,dir,
-             w:(1+depth*2.6)*DPR,                // и толще
-             a:.22+depth*.62,                    // и ярче
-             sp:(.35+depth*2.2)*dir*DPR,         // и быстрее — это даёт глубину
-             white:Math.random()<.22};
+             x:spread?Math.random()*(W+2*r)-r:(dir>0?-r*2:W+r*2),
+             r, dir,
+             w:(1+depth*1.6)*DPR,
+             a:.22+depth*.60,
+             sp:(.25+depth*1.5)*dir*DPR,               // дрейф — быстрее у ближних
+             rot:Math.random()*Math.PI*2,
+             rotSp:(.006+depth*.02)*(Math.random()<.5?1:-1),   // вращение колеса
+             white:Math.random()<.15};
     }
     function spawnAll(){
-      const n=Math.min(34,Math.max(14,Math.round(innerWidth*innerHeight/50000)));
-      tr=[];for(let i=0;i<n;i++)tr.push(mk(true));
+      const n=Math.min(22,Math.max(9,Math.round(innerWidth*innerHeight/95000)));
+      wh=[];for(let i=0;i<n;i++)wh.push(mk(true));
     }
     function resize(){
       DPR=Math.min(2,devicePixelRatio||1);
@@ -659,25 +663,32 @@
       c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';
       spawnAll();
     }
+    function drawWheel(o){
+      const rgb=o.white?'255,255,255':'47,217,239';
+      ctx.strokeStyle='rgba('+rgb+','+o.a.toFixed(3)+')';
+      ctx.lineWidth=o.w;
+      ctx.shadowColor='rgba('+rgb+',.55)';ctx.shadowBlur=6*DPR;
+      ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.stroke();          // обод
+      const hub=o.r*.30;
+      ctx.beginPath();ctx.arc(o.x,o.y,hub,0,Math.PI*2);ctx.stroke();         // ступица
+      for(let i=0;i<SPOKES;i++){                                             // спицы
+        const ang=o.rot+i*(Math.PI*2/SPOKES);
+        const ca=Math.cos(ang), sa=Math.sin(ang);
+        ctx.beginPath();
+        ctx.moveTo(o.x+hub*ca,o.y+hub*sa);
+        ctx.lineTo(o.x+o.r*ca,o.y+o.r*sa);
+        ctx.stroke();
+      }
+    }
     function loop(){
       last=performance.now();
       try{
         ctx.clearRect(0,0,W,H);
-        ctx.globalCompositeOperation='lighter';   // свет складывается, как на длинной выдержке
-        ctx.lineCap='round';
-        for(const p of tr){
-          p.x+=p.sp;
-          if(p.dir>0?(p.x-p.L>W):(p.x+p.L<0)){Object.assign(p,mk(false));continue;}
-          const tx=p.x-p.L*p.dir;                 // хвост
-          if(!isFinite(tx))continue;
-          const rgb=p.white?'255,255,255':'47,217,239';
-          const g=ctx.createLinearGradient(tx,p.y,p.x,p.y);
-          g.addColorStop(0,'rgba('+rgb+',0)');
-          g.addColorStop(.72,'rgba('+rgb+','+(p.a*.35).toFixed(3)+')');
-          g.addColorStop(1,'rgba('+rgb+','+p.a.toFixed(3)+')');
-          ctx.strokeStyle=g;ctx.lineWidth=p.w;
-          ctx.shadowColor='rgba('+rgb+',.5)';ctx.shadowBlur=7*DPR;
-          ctx.beginPath();ctx.moveTo(tx,p.y);ctx.lineTo(p.x,p.y);ctx.stroke();
+        ctx.globalCompositeOperation='lighter';       // свет складывается — тот же приём, что и раньше
+        for(const o of wh){
+          o.x+=o.sp; o.rot+=o.rotSp;
+          if(o.dir>0?(o.x-o.r>W):(o.x+o.r<0)){Object.assign(o,mk(false));continue;}
+          drawWheel(o);
         }
         ctx.shadowBlur=0;
         ctx.globalCompositeOperation='source-over';
@@ -689,7 +700,7 @@
     raf=requestAnimationFrame(loop);
     setInterval(function(){if(!document.hidden&&performance.now()-last>900){cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}},1200);
     document.addEventListener('visibilitychange',function(){if(!document.hidden){cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}});
-    console.log('[GUD] фон: световых следов '+tr.length);
+    console.log('[GUD] фон: колёс '+wh.length);
   })();
 
   /* ===== ОТЗЫВЫ ===== */
@@ -697,7 +708,7 @@
     const rvModal=document.getElementById('reviews');
     const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     const val=id=>document.getElementById(id).value.trim();
-    const ready=()=>SUPABASE.url && SUPABASE.anonKey && !/ВСТАВЬ/.test(SUPABASE.url) && !/ВСТАВЬ/.test(SUPABASE.anonKey);
+    const ready=()=>SUPABASE.url && SUPABASE.anonKey && !/ВСТАВЬ/.test(SUPABASE.url) && !/ВСТАВЬ/.test(SUPABASE.anonKey) && !/^sb_secret_/.test(SUPABASE.anonKey);
     const hdr=extra=>Object.assign({apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey},extra||{});
     const SETUP='<div class="rv-setup">Раздел отзывов почти готов — осталось подключить базу (пара минут):<br><br>'+
       '<b>1.</b> Открой <b>reviews.sql</b> из архива, скопируй его в Supabase → SQL Editor → Run.<br>'+
@@ -740,6 +751,7 @@
       const fail=m=>{st.textContent=m;st.className='rv-msg err';};
       if(!service||!comment||!name||!email)return fail('Пожалуйста, заполните все поля.');
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return fail('Проверьте адрес почты.');
+      if(/^sb_secret_/.test(SUPABASE.anonKey)) return fail('В настройках указан секретный ключ — нужен publishable/anon.');
       if(!ready())return fail('Отзывы ещё не подключены к базе (см. вкладку «Смотреть»).');
       const btn=document.getElementById('rvSend');const old=btn.textContent;btn.disabled=true;btn.textContent='Отправляем…';
       try{

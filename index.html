@@ -30,9 +30,9 @@
 
   /* ---- Animated background ---- */
   /* фото мастерской + осветление (фото само по себе очень тёмное) */
-  .bg-photo{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("img/bg.jpg");background-size:cover;background-position:center 38%;background-repeat:no-repeat;filter:brightness(1.55) contrast(1.04)}
+  .bg-photo{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("img/bg.jpg");background-size:cover;background-position:center 38%;background-repeat:no-repeat;filter:brightness(1.22) contrast(1.04)}
   /* затемняющая вуаль поверх фото — чтобы текст читался. Хочешь фон ярче — уменьшай числа */
-  .bg-veil{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(ellipse 62% 52% at 50% 40%,rgba(4,4,5,.50),rgba(4,4,5,.26) 55%,rgba(4,4,5,.06) 78%,transparent 100%),linear-gradient(180deg,rgba(4,4,5,.26),rgba(4,4,5,.04) 30%,rgba(4,4,5,.06) 68%,rgba(4,4,5,.46))}
+  .bg-veil{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(ellipse 62% 52% at 50% 40%,rgba(4,4,5,.60),rgba(4,4,5,.36) 55%,rgba(4,4,5,.14) 78%,transparent 100%),linear-gradient(180deg,rgba(4,4,5,.36),rgba(4,4,5,.12) 30%,rgba(4,4,5,.14) 68%,rgba(4,4,5,.54))}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
   main,header,footer{position:relative;z-index:2}
@@ -144,8 +144,8 @@
   /* ---- Work ---- */
   .work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
   .work-item{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;aspect-ratio:4/3;border:1px solid var(--border)}
-  .work-item img{width:100%;height:100%;object-fit:cover;transition:.6s ease;filter:brightness(.6)}
-  .work-item:hover img{transform:scale(1.08);filter:brightness(.92)}
+  .work-item img,.work-item video{width:100%;height:100%;object-fit:cover;transition:.6s ease;filter:brightness(.6)}
+  .work-item:hover img,.work-item:hover video{transform:scale(1.08);filter:brightness(.92)}
   .work-item .ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;background:linear-gradient(180deg,transparent 42%,rgba(2,2,3,.94))}
   .work-item .ov h4{font-size:1.05rem;font-weight:600;margin-bottom:4px}
   .work-item .ov small{color:var(--cyan);font-size:.74rem;letter-spacing:.13em;text-transform:uppercase}
@@ -258,11 +258,31 @@
   .rv-mod button:hover{color:#fff;border-color:var(--border-2)}
   .rv-mod button.danger:hover{color:#ff6b6b;border-color:rgba(255,107,107,.5)}
   .rv-mod button:disabled{opacity:.5;cursor:default}
+  .rv-mod button.ok{color:var(--cyan);border-color:var(--border-2)}
+  .rv-edit label{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px 2px}
+  .rv-edit input,.rv-edit textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter';font-size:.92rem;padding:11px 13px;margin-bottom:13px;outline:none;transition:.2s}
+  .rv-edit input:focus,.rv-edit textarea:focus{border-color:var(--border-2);box-shadow:0 0 0 3px rgba(47,217,239,.08)}
+  .rv-edit textarea{min-height:120px;resize:vertical;line-height:1.6}
   @media(max-width:640px){.rv-top{padding:22px 18px 0}.rv-body{padding:18px}}
   .lb{position:fixed;inset:0;z-index:100;background:rgba(2,2,3,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:24px}
   .lb.open{display:flex}
   .lb-content{max-width:1000px;width:100%;position:relative}
-  .lb-content img,.lb-content video{width:100%;max-height:78vh;object-fit:contain;border-radius:12px;border:1px solid var(--border-2)}
+  #lbMedia img,#lbMedia video{width:100%;max-height:74vh;object-fit:contain;border-radius:12px;border:1px solid var(--border-2);background:#000}
+  /* стрелки, счётчик и миниатюры галереи */
+  .lb-nav{position:absolute;top:37%;transform:translateY(-50%);z-index:3;width:52px;height:52px;border-radius:50%;background:rgba(10,11,13,.72);border:1px solid var(--border-2);color:var(--cyan);cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:.2s}
+  .lb-nav:hover{background:rgba(47,217,239,.16);box-shadow:0 0 22px rgba(47,217,239,.25)}
+  .lb-nav svg{width:24px;height:24px}
+  .lb-nav.prev{left:-18px}
+  .lb-nav.next{right:-18px}
+  .lb-count{position:absolute;top:-40px;left:2px;font-family:'Space Grotesk';font-size:.86rem;color:var(--muted);letter-spacing:.06em}
+  .lb-thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .lb-thumb{position:relative;width:70px;height:52px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:#000;cursor:pointer;opacity:.45;transition:.2s}
+  .lb-thumb:hover{opacity:.85}
+  .lb-thumb.on{opacity:1;border-color:var(--cyan);box-shadow:0 0 14px rgba(47,217,239,.3)}
+  .lb-thumb img,.lb-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+  .lb-thumb .vid{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.34)}
+  .lb-thumb .vid svg{width:16px;height:16px;color:#fff}
+  @media(max-width:640px){.lb-nav{width:42px;height:42px}.lb-nav.prev{left:0}.lb-nav.next{right:0}.lb-thumb{width:56px;height:42px}}
   .lb-cap{text-align:center;color:var(--text);margin-top:14px;font-family:'Sora';font-weight:600}
   .lb-note{text-align:center;color:var(--muted);font-size:.85rem;margin-top:6px}
   .lb-close{position:absolute;top:-46px;right:0;background:none;border:0;color:#fff;cursor:pointer;padding:8px}
@@ -490,9 +510,13 @@
 <div class="lb" id="lb">
   <div class="lb-content">
     <button class="lb-close" id="lbClose" aria-label="Закрыть"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="lb-count" id="lbCount"></div>
     <div id="lbMedia"></div>
+    <button class="lb-nav prev" id="lbPrev" aria-label="Назад"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="lb-nav next" id="lbNext" aria-label="Вперёд"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+    <div class="lb-thumbs" id="lbThumbs"></div>
     <div class="lb-cap" id="lbCap"></div>
-    <div class="lb-note" data-t="lb_note">Здесь будут ваши реальные фото и видео работ.</div>
+    <div class="lb-note" id="lbNote" data-t="lb_note">Здесь будут ваши реальные фото и видео работ.</div>
   </div>
 </div>
 
@@ -580,11 +604,44 @@
   const t = k => (I18N[LANG] && I18N[LANG][k]) || I18N.ru[k] || k;
 
   let SERVICES = I18N_SERVICES[LANG].map((x,i)=>({...x, img:["to","diag","brakes","susp","engine","walnut","parts"][i]}));
-  let WORK     = I18N_WORK[LANG].map((x,i)=>({...x, img:"w"+(i+1), type:"image"}));
+  let WORK     = I18N_WORK[LANG].map((x,i)=>({...x, n:i+1, media:(WORK_MEDIA[i]||[])}));
   let STATS    = I18N_STATS[LANG];
   let MQ       = I18N_MQ[LANG];
 
   const img=(seed,w,h)=>`https://picsum.photos/seed/gud-${seed}/${w}/${h}`;
+
+  /* ============================================================
+     ФОТО И ВИДЕО РАБОТ
+     Файлы клади в папку  img/work/  — имена любые.
+     Порядок списков = порядок карточек в разделе «Наша работа».
+     Первый файл в списке становится обложкой карточки.
+     Видео (.mp4 / .webm / .mov) распознаётся по расширению.
+     Для видео можно задать свою обложку:
+        {src:"work/grm-video.mp4", poster:"work/grm-1.jpg"}
+     Пустой список = останется временная картинка-заглушка.
+     ============================================================ */
+  const WORK_MEDIA = [
+    [],   // 1. Замена ГРМ
+    [],   // 2. Диагностика на стенде
+    [],   // 3. Ремонт подвески
+    [],   // 4. Чистка орехом
+    [],   // 5. Тормозная система
+    []    // 6. Замена масла
+  ];
+
+  const isVid   = s => /\.(mp4|webm|ogv|mov|m4v)(\?|#|$)/i.test(s);
+  const mSrc    = m => typeof m==='string' ? m : (m&&m.src)||'';
+  const mPoster = m => (m && typeof m==='object' && m.poster) ? m.poster : '';
+  const mUrl    = p => /^(https?:|\/)/i.test(p) ? p : 'img/'+p;
+
+  /* В карточках услуг пишем «Продажа автозапчастей» (это мы продаём),
+     а в списке записи — «Покупка автозапчастей» (это клиент покупает). */
+  const BK_LABEL={
+    "Продажа автозапчастей":"Покупка автозапчастей",
+    "Rezerves daļu tirdzniecība":"Rezerves daļu iegāde",
+    "Spare parts sales":"Spare parts purchase"
+  };
+  const bkLabel=s=>BK_LABEL[s]||s;
 
   const svcGrid=document.getElementById('svcGrid');
   const workGrid=document.getElementById('workGrid');
@@ -596,17 +653,29 @@
     SERVICES.forEach((s,i)=>{const el=document.createElement('div');el.className='svc-card reveal';el.style.transitionDelay=(i%3*70)+'ms';
       el.innerHTML=`<div class="thumb"><img loading="lazy" src="img/${s.img}.jpg" alt="${s.t}"></div>
         <div class="body"><div class="num">0${i+1}</div><h3>${s.t}</h3><p>${s.d}</p>
-        <a href="#booking" class="more" data-s="${s.t}">${t('svc_book')} <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>`;
+        <a href="#booking" class="more" data-s="${bkLabel(s.t)}">${t('svc_book')} <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>`;
       svcGrid.appendChild(el);});
     svcGrid.querySelectorAll('.more[data-s]').forEach(a=>a.addEventListener('click',()=>{
       const sel=document.getElementById('b-service'); if(sel)sel.value=a.dataset.s;}));
   }
   function renderWork(){
     workGrid.innerHTML='';
-    WORK.forEach((w,i)=>{const el=document.createElement('div');el.className='work-item reveal';el.style.transitionDelay=(i%3*70)+'ms';
-      el.innerHTML=`<img loading="lazy" src="${img(w.img,600,450)}" alt="${w.t}">
-        <div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-        <div class="ov"><small>${w.c}</small><h4>${w.t}</h4></div>`;
+    WORK.forEach((w,i)=>{
+      const el=document.createElement('div');el.className='work-item reveal';el.style.transitionDelay=(i%3*70)+'ms';
+      const cover=w.media[0], hasVid=w.media.some(m=>isVid(mSrc(m)));
+      let thumb;
+      if(!cover){                                   // файлов ещё нет — заглушка
+        thumb=`<img loading="lazy" src="${img('w'+w.n,600,450)}" alt="${w.t}">`;
+      }else if(isVid(mSrc(cover))){
+        const p=mPoster(cover);
+        thumb = p ? `<img loading="lazy" src="${mUrl(p)}" alt="${w.t}">`
+                  : `<video src="${mUrl(mSrc(cover))}#t=0.5" muted playsinline preload="metadata"></video>`;
+      }else{
+        thumb=`<img loading="lazy" src="${mUrl(mSrc(cover))}" alt="${w.t}">`;
+      }
+      el.innerHTML=thumb+
+        (hasVid?`<div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>`:'')+
+        `<div class="ov"><small>${w.c}</small><h4>${w.t}</h4></div>`;
       el.addEventListener('click',()=>openLB(w));workGrid.appendChild(el);});
   }
   function renderStats(){
@@ -624,7 +693,7 @@
     const sel=document.getElementById('b-service'); if(!sel)return;
     const cur=sel.value;
     sel.innerHTML=`<option value="" disabled ${cur?'':'selected'} data-t="bk_service">${t('bk_service')}</option>`;
-    SERVICES.forEach(x=>{const o=document.createElement('option');o.value=x.t;o.textContent=x.t;sel.appendChild(o);});
+    SERVICES.forEach(x=>{const o=document.createElement('option');o.value=bkLabel(x.t);o.textContent=bkLabel(x.t);sel.appendChild(o);});
     const o=document.createElement('option');o.value=t('bk_other');o.textContent=t('bk_other');sel.appendChild(o);
     if(cur)sel.value=cur;
   }
@@ -642,7 +711,7 @@
       const v=I18N[l][el.dataset.tp]; if(v!=null) el.placeholder=v;
     });
     SERVICES = I18N_SERVICES[l].map((x,i)=>({...x, img:["to","diag","brakes","susp","engine","walnut","parts"][i]}));
-    WORK     = I18N_WORK[l].map((x,i)=>({...x, img:"w"+(i+1), type:"image"}));
+    WORK     = I18N_WORK[l].map((x,i)=>({...x, n:i+1, media:(WORK_MEDIA[i]||[])}));
     STATS    = I18N_STATS[l];
     MQ       = I18N_MQ[l];
     renderServices(); renderWork(); renderStats(); renderMarquee(); renderServiceOptions();
@@ -658,13 +727,71 @@
     (function step(t){const p=Math.min(1,(t-t0)/dur);const val=Math.floor((1-Math.pow(1-p,3))*to);
       b.innerHTML=val.toLocaleString('ru-RU')+`<span class="suf">${suf}</span>`;if(p<1)requestAnimationFrame(step);})(t0);}
 
-  /* lightbox */
-  const lb=document.getElementById('lb'),lbMedia=document.getElementById('lbMedia'),lbCap=document.getElementById('lbCap');
-  function openLB(w){lbMedia.innerHTML=(w.type==='video'&&w.src)?`<video controls autoplay src="${w.src}"></video>`:`<img src="${img(w.img,1200,800)}" alt="${w.t}">`;lbCap.textContent=w.t;lb.classList.add('open');document.body.style.overflow='hidden';}
-  function closeLB(){lb.classList.remove('open');lbMedia.innerHTML='';document.body.style.overflow='';}
+  /* ---- Галерея: листаем фото и видео внутри одной карточки ---- */
+  const lb=document.getElementById('lb'),lbMedia=document.getElementById('lbMedia'),lbCap=document.getElementById('lbCap'),
+        lbPrev=document.getElementById('lbPrev'),lbNext=document.getElementById('lbNext'),
+        lbCount=document.getElementById('lbCount'),lbThumbs=document.getElementById('lbThumbs'),
+        lbNote=document.getElementById('lbNote');
+  let GAL=[], GI=0;
+
+  function openLB(w){
+    GAL=w.media||[]; GI=0;
+    lbCap.textContent=w.t;
+    lbNote.style.display=GAL.length?'none':'block';
+    lb.classList.add('open'); document.body.style.overflow='hidden';
+    showMedia();
+  }
+  function showMedia(){
+    const many=GAL.length>1;
+    lbPrev.style.display=many?'flex':'none';
+    lbNext.style.display=many?'flex':'none';
+    lbCount.textContent=many?(GI+1)+' / '+GAL.length:'';
+    if(!GAL.length){                                   // файлов ещё нет
+      lbMedia.innerHTML=`<img src="${img('placeholder',1200,800)}" alt="">`;
+      lbThumbs.innerHTML=''; return;
+    }
+    const m=GAL[GI], src=mUrl(mSrc(m)), pos=mPoster(m);
+    lbMedia.innerHTML = isVid(mSrc(m))
+      ? `<video controls autoplay playsinline preload="metadata"${pos?` poster="${mUrl(pos)}"`:''} src="${src}"></video>`
+      : `<img src="${src}" alt="">`;
+    renderThumbs();
+  }
+  function renderThumbs(){
+    if(GAL.length<2){lbThumbs.innerHTML='';return;}
+    lbThumbs.innerHTML=GAL.map((m,i)=>{
+      const s=mSrc(m), v=isVid(s), p=mPoster(m);
+      const inner = v
+        ? (p?`<img src="${mUrl(p)}" alt="">`:`<video src="${mUrl(s)}#t=0.5" muted preload="metadata"></video>`)+
+          `<span class="vid"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>`
+        : `<img src="${mUrl(s)}" alt="">`;
+      return `<div class="lb-thumb${i===GI?' on':''}" data-i="${i}">${inner}</div>`;
+    }).join('');
+  }
+  function stepGal(d){ if(GAL.length<2)return; GI=(GI+d+GAL.length)%GAL.length; showMedia(); }
+  function closeLB(){lb.classList.remove('open');lbMedia.innerHTML='';lbThumbs.innerHTML='';GAL=[];document.body.style.overflow='';}
+
+  lbPrev.addEventListener('click',e=>{e.stopPropagation();stepGal(-1)});
+  lbNext.addEventListener('click',e=>{e.stopPropagation();stepGal(1)});
+  lbThumbs.addEventListener('click',e=>{
+    const th=e.target.closest('.lb-thumb'); if(!th)return;
+    GI=+th.dataset.i; showMedia();
+  });
+  /* листание пальцем на телефоне */
+  let sx=0;
+  lbMedia.addEventListener('touchstart',e=>{sx=e.changedTouches[0].clientX},{passive:true});
+  lbMedia.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx;
+    if(Math.abs(dx)>50) stepGal(dx<0?1:-1);
+  },{passive:true});
+
   document.getElementById('lbClose').addEventListener('click',closeLB);
   lb.addEventListener('click',e=>{if(e.target===lb)closeLB()});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closeLB();
+    if(!lb.classList.contains('open'))return;
+    if(e.key==='ArrowLeft') stepGal(-1);
+    if(e.key==='ArrowRight')stepGal(1);
+  });
 
   /* header + reveal */
   const hdr=document.getElementById('hdr');const onScroll=()=>hdr.classList.toggle('scrolled',window.scrollY>30);onScroll();addEventListener('scroll',onScroll,{passive:true});
@@ -796,10 +923,22 @@
         (x.service?'<div class="rv-tag">'+esc(x.service)+'</div>':'')+
         '<p class="rv-text">'+esc(x.comment)+'</p>'+
         (adm?'<div class="rv-email">'+esc(x.email||'')+'</div>'+
-             '<div class="rv-mod"><button data-act="tg">'+(off?'Показать':'Скрыть')+'</button>'+
+             '<div class="rv-mod"><button data-act="edit">Изменить</button>'+
+             '<button data-act="tg">'+(off?'Показать':'Скрыть')+'</button>'+
              '<button data-act="del" class="danger">Удалить</button></div>':'')+
         '</div>';
     }
+    /* форма правки отзыва прямо в карточке */
+    function editForm(x){
+      return '<div class="rv-edit">'+
+        '<label>Услуга</label><input class="e-service" maxlength="120" value="'+esc(x.service||'')+'">'+
+        '<label>Имя и фамилия</label><input class="e-name" maxlength="80" value="'+esc(x.name||'')+'">'+
+        '<label>Комментарий</label><textarea class="e-comment" maxlength="2000">'+esc(x.comment||'')+'</textarea>'+
+        '</div>'+
+        '<div class="rv-mod"><button data-act="save" class="ok">Сохранить</button>'+
+        '<button data-act="cancel">Отмена</button></div>';
+    }
+    let ROWS=[];   // последние загруженные отзывы — нужны для правки
     async function load(){
       const list=document.getElementById('rvList');
       if(!ready()){list.innerHTML=SETUP;return;}
@@ -813,21 +952,44 @@
         if((r.status===401||r.status===403)&&isAdmin()){ saveAdmin(null); return load(); }  // токен истёк
         if(!r.ok)throw new Error(r.status);
         const data=await r.json();
+        ROWS=data;
         list.innerHTML = data.length? data.map(card).join('') : '<div class="rv-empty">'+t('rv_empty')+'</div>';
       }catch(e){ list.innerHTML='<div class="rv-empty">'+t('rv_err')+'</div>'; }
     }
-    /* удалить / скрыть-показать отзыв */
+    /* изменить / удалить / скрыть-показать отзыв */
     document.getElementById('rvList').addEventListener('click',async e=>{
       const b=e.target.closest('.rv-mod button'); if(!b||!isAdmin())return;
       const cardEl=b.closest('.rv-card'), id=cardEl.dataset.id, act=b.dataset.act;
+      const row=ROWS.find(r=>String(r.id)===String(id));
+
+      if(act==='cancel'){ if(row)cardEl.outerHTML=card(row); return; }
+      if(act==='edit'){
+        if(!row)return;
+        cardEl.innerHTML=editForm(row);
+        cardEl.querySelector('.e-comment').focus();
+        return;
+      }
       if(act==='del' && !confirm('Удалить этот отзыв безвозвратно?'))return;
+
+      let body=null;
+      if(act==='save'){
+        body={
+          service:cardEl.querySelector('.e-service').value.trim(),
+          name:   cardEl.querySelector('.e-name').value.trim(),
+          comment:cardEl.querySelector('.e-comment').value.trim()
+        };
+        if(!body.service||!body.name||!body.comment)return alert('Поля не могут быть пустыми.');
+      }else if(act==='tg'){
+        body={approved:cardEl.classList.contains('is-hidden')};
+      }
+
       cardEl.querySelectorAll('.rv-mod button').forEach(x=>x.disabled=true);
       const q=SUPABASE.url+'/rest/v1/reviews?id=eq.'+encodeURIComponent(id);
       try{
         const r = act==='del'
           ? await fetch(q,{method:'DELETE',headers:authHdr({'Prefer':'return=minimal'})})
           : await fetch(q,{method:'PATCH',headers:authHdr({'Content-Type':'application/json','Prefer':'return=minimal'}),
-                           body:JSON.stringify({approved:cardEl.classList.contains('is-hidden')})});
+                           body:JSON.stringify(body)});
         if(r.status===401||r.status===403){ saveAdmin(null); return load(); }
         if(!r.ok)throw new Error(r.status);
         load();

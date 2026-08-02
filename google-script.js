@@ -71,17 +71,28 @@ function doPost(e) {
     appendToLog(row);
     var xlsx = buildXlsx(row, d);
 
-    // одно письмо сразу на все адреса из TO
-    MailApp.sendEmail({
-      to: TO.join(','),
-      subject: SUBJECT + (d.name ? ' — ' + d.name : ''),
-      body: textBody(row),
-      htmlBody: htmlBody(row),
-      attachments: [xlsx],
-      name: 'GUD Autoserviss'
-    });
+    // отдельное письмо каждому адресу — так ни одно не потеряется
+    var sent = [], failed = [];
+    for (var i = 0; i < TO.length; i++) {
+      var addr = String(TO[i]).trim();
+      if (!addr) continue;
+      try {
+        MailApp.sendEmail({
+          to: addr,
+          subject: SUBJECT + (d.name ? ' — ' + d.name : ''),
+          body: textBody(row),
+          htmlBody: htmlBody(row),
+          attachments: [xlsx],
+          name: 'GUD Autoserviss'
+        });
+        sent.push(addr);
+      } catch (mailErr) {
+        failed.push(addr + ': ' + mailErr);
+      }
+    }
+    Logger.log('Отправлено: ' + sent.join(', ') + (failed.length ? ' | ОШИБКИ: ' + failed.join(' ; ') : ''));
 
-    return out({ ok: true });
+    return out({ ok: failed.length === 0, sent: sent, failed: failed });
   } catch (err) {
     return out({ ok: false, error: String(err) });
   }

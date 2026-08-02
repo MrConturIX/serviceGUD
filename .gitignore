@@ -1,0 +1,13 @@
+# Видео на сайт не заливаем — они пойдут через YouTube.
+# Файлы остаются у тебя на компьютере, но в GitHub и на сайт не попадут.
+*.mp4
+*.mov
+*.MOV
+*.avi
+*.mkv
+*.webm
+
+# Системный мусор Windows / macOS
+Thumbs.db
+desktop.ini
+.DS_Store

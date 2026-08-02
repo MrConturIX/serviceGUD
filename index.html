@@ -142,9 +142,15 @@
   .svc-card:hover .more svg{transform:translateX(4px)}
 
   /* ---- Work ---- */
-  .work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .work-item{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;aspect-ratio:4/3;border:1px solid var(--border)}
-  .work-item img,.work-item video{width:100%;height:100%;object-fit:cover;transition:.6s ease;filter:brightness(.6)}
+  /* 6 колонок, карточка занимает 2 → в ряду по три.
+     Последние две сдвигаем к центру, получается «пирамидка» 3 + 2. */
+  .work-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
+  .work-item{grid-column:span 2}
+  .work-item:nth-child(4){grid-column:2/4}
+  .work-item:nth-child(5){grid-column:4/6}
+  /* квадрат: фото с телефона вертикальные, в широкой карточке от них оставалась полоска */
+  .work-item{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;aspect-ratio:1/1;border:1px solid var(--border);background:#0a0b0d}
+  .work-item img,.work-item video{width:100%;height:100%;object-fit:cover;object-position:center 38%;transition:.6s ease;filter:brightness(.6)}
   .work-item:hover img,.work-item:hover video{transform:scale(1.08);filter:brightness(.92)}
   .work-item .ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;background:linear-gradient(180deg,transparent 42%,rgba(2,2,3,.94))}
   .work-item .ov h4{font-size:1.05rem;font-weight:600;margin-bottom:4px}
@@ -307,6 +313,8 @@
   }
   @media(max-width:920px){
     .svc-grid,.work-grid{grid-template-columns:repeat(2,1fr)}
+    .work-item,.work-item:nth-child(4),.work-item:nth-child(5){grid-column:auto}
+    .work-item:nth-child(5){grid-column:1/-1;width:calc(50% - 9px);justify-self:center}
     .stats{padding:90px 0 60px}
     .about-grid{grid-template-columns:1fr;gap:34px}
     .about-media{aspect-ratio:16/10;max-height:420px}
@@ -322,6 +330,7 @@
     .section{padding:74px 0}
     .reactor{width:min(86vw,40vh,360px)}
     .svc-grid,.work-grid,.form-grid{grid-template-columns:1fr}
+    .work-item,.work-item:nth-child(4),.work-item:nth-child(5){grid-column:auto;width:auto}
     .stats-grid{grid-template-columns:minmax(0,1fr)}
     .foot-grid{grid-template-columns:1fr}
     .foot-cell{border-right:0}

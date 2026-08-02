@@ -50,13 +50,47 @@ create or replace view public.reviews_public as
 grant select on public.reviews_public to anon;
 
 -- ============================================================
---  ГОТОВО. Дальше — по желанию:
+--  5) ПРАВА РЕДАКТОРА ОТЗЫВОВ (модерация прямо на сайте)
+--     Редактор = любой пользователь, вошедший через Supabase Auth
+--     (роль authenticated). Он может читать все отзывы (в т.ч. скрытые
+--     и с e-mail), скрывать/показывать их и удалять.
+--     Обычный посетитель (anon) этого не может — ни через сайт,
+--     ни через консоль браузера: запрещено на уровне базы.
+-- ============================================================
+
+drop policy if exists reviews_admin_select on public.reviews;
+create policy reviews_admin_select on public.reviews
+  for select to authenticated using (true);
+
+drop policy if exists reviews_admin_update on public.reviews;
+create policy reviews_admin_update on public.reviews
+  for update to authenticated using (true) with check (true);
+
+drop policy if exists reviews_admin_delete on public.reviews;
+create policy reviews_admin_delete on public.reviews
+  for delete to authenticated using (true);
+
+grant select, update, delete on public.reviews to authenticated;
+grant select on public.reviews_public to authenticated;
+
+-- ============================================================
+--  ГОТОВО.
 --
---  МОДЕРАЦИЯ (чтобы отзыв появлялся только после твоей проверки):
+--  СОЗДАТЬ РЕДАКТОРА (один раз):
+--    Supabase → Authentication → Users → Add user → Create new user
+--    Укажи e-mail и пароль, включи "Auto Confirm User".
+--    Этими данными входишь на сайте: окно «Отзывы» → «Вход для редактора».
+--    После входа под каждым отзывом появятся кнопки «Скрыть» и «Удалить».
+--    Вход держится до закрытия вкладки.
+--
+--  ВАЖНО: не включай публичную регистрацию —
+--    Authentication → Providers → Email → выключи "Enable sign ups".
+--    Иначе кто угодно сможет зарегистрироваться и получить права редактора.
+--
+--  МОДЕРАЦИЯ ДО ПУБЛИКАЦИИ (новый отзыв скрыт, пока не одобришь):
 --    alter table public.reviews alter column approved set default false;
---  Тогда новые отзывы будут скрыты, пока ты не откроешь их вручную:
---    Supabase → Table editor → reviews → поставить approved = true.
+--    Одобряешь на сайте кнопкой «Показать» в режиме редактора.
 --
---  УДАЛИТЬ отзыв: в Table editor удали строку, либо:
+--  УДАЛИТЬ отзыв вручную:
 --    delete from public.reviews where id = '...';
 -- ============================================================

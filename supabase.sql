@@ -41,6 +41,23 @@ create or replace view public.reviews_public as
 
 grant select on public.reviews_public to anon;
 
+-- права РЕДАКТОРА отзывов (вошёл через Supabase Auth = роль authenticated):
+-- видит все отзывы, может скрывать/показывать и удалять. Посетителю (anon) нельзя.
+drop policy if exists reviews_admin_select on public.reviews;
+create policy reviews_admin_select on public.reviews
+  for select to authenticated using (true);
+
+drop policy if exists reviews_admin_update on public.reviews;
+create policy reviews_admin_update on public.reviews
+  for update to authenticated using (true) with check (true);
+
+drop policy if exists reviews_admin_delete on public.reviews;
+create policy reviews_admin_delete on public.reviews
+  for delete to authenticated using (true);
+
+grant select, update, delete on public.reviews to authenticated;
+grant select on public.reviews_public to authenticated;
+
 -- ============================================================
 --  2) ОНЛАЙН-ЗАПИСЬ (заявки клиентов)
 --     Заявки видит только владелец в Supabase → Table editor.
@@ -80,7 +97,13 @@ create index if not exists bookings_created_idx on public.bookings (created_at d
 --  ЗАЯВКИ смотри в Supabase → Table editor → bookings.
 --    Отработал заявку — поставь status = 'done' (или 'confirmed').
 --
+--  РЕДАКТОР ОТЗЫВОВ (создать один раз):
+--    Authentication → Users → Add user → e-mail + пароль, "Auto Confirm User".
+--    На сайте: окно «Отзывы» → «Вход для редактора».
+--    ВАЖНО: Authentication → Providers → Email → выключи "Enable sign ups",
+--    иначе кто угодно сможет зарегистрироваться и получить права редактора.
+--
 --  МОДЕРАЦИЯ ОТЗЫВОВ (по желанию — показывать только проверенные):
 --    alter table public.reviews alter column approved set default false;
---    затем одобряй вручную: Table editor → reviews → approved = true.
+--    затем одобряй кнопкой «Показать» в режиме редактора на сайте.
 -- ============================================================

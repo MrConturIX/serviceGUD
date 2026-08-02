@@ -603,11 +603,6 @@
        else { const b=(navigator.language||'ru').slice(0,2).toLowerCase(); if(I18N[b]) LANG=b; } }catch(e){}
   const t = k => (I18N[LANG] && I18N[LANG][k]) || I18N.ru[k] || k;
 
-  let SERVICES = I18N_SERVICES[LANG].map((x,i)=>({...x, img:["to","diag","brakes","susp","engine","walnut","parts"][i]}));
-  let WORK     = I18N_WORK[LANG].map((x,i)=>({...x, n:i+1, media:(WORK_MEDIA[i]||[])}));
-  let STATS    = I18N_STATS[LANG];
-  let MQ       = I18N_MQ[LANG];
-
   const img=(seed,w,h)=>`https://picsum.photos/seed/gud-${seed}/${w}/${h}`;
 
   /* ============================================================
@@ -642,6 +637,12 @@
     "Spare parts sales":"Spare parts purchase"
   };
   const bkLabel=s=>BK_LABEL[s]||s;
+
+  /* данные текущего языка (объявляем ПОСЛЕ WORK_MEDIA — иначе ошибка) */
+  let SERVICES = I18N_SERVICES[LANG].map((x,i)=>({...x, img:["to","diag","brakes","susp","engine","walnut","parts"][i]}));
+  let WORK     = I18N_WORK[LANG].map((x,i)=>({...x, n:i+1, media:(WORK_MEDIA[i]||[])}));
+  let STATS    = I18N_STATS[LANG];
+  let MQ       = I18N_MQ[LANG];
 
   const svcGrid=document.getElementById('svcGrid');
   const workGrid=document.getElementById('workGrid');

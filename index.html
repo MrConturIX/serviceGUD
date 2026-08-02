@@ -538,7 +538,6 @@
       <div class="rv-tabs">
         <button class="rv-tab active" id="rvTabList" data-t="rv_tab1">Смотреть</button>
         <button class="rv-tab" id="rvTabForm" data-t="rv_tab2">Оставить отзыв</button>
-        <button class="rv-link" id="rvAdminBtn" style="margin-left:auto;margin-right:0">Вход для редактора</button>
       </div>
     </div>
     <div class="rv-body">
@@ -965,10 +964,8 @@
       paintAdmin();
     }
     function paintAdmin(){
-      const bar=document.getElementById('rvAdminBar'), btn=document.getElementById('rvAdminBtn');
-      bar.style.display=isAdmin()?'flex':'none';
+      document.getElementById('rvAdminBar').style.display=isAdmin()?'flex':'none';
       document.getElementById('rvAdminWho').textContent=isAdmin()?('Режим редактора: '+ADMIN.email):'';
-      btn.style.display=isAdmin()?'none':'inline-block';
     }
 
     function card(x){
@@ -1119,7 +1116,25 @@
     document.getElementById('rvTabForm').addEventListener('click',()=>tab('form'));
     document.getElementById('rvWrite').addEventListener('click',()=>tab('form'));
     document.getElementById('rvSend').addEventListener('click',submit);
-    document.getElementById('rvAdminBtn').addEventListener('click',()=>tab('login'));
+    /* ===== СКРЫТЫЙ ВХОД ДЛЯ РЕДАКТОРА =====
+       Кнопки на сайте нет. Открыть окно входа можно двумя способами:
+         1) добавить  ?edit  в конец адреса сайта  →  https://твой-сайт.lv/?edit
+         2) пять раз быстро нажать на год в подвале (© 2026) — удобно с телефона
+       Слово «edit» можно поменять на любое своё — правь в двух местах ниже. */
+    if(/[?&]edit(=|&|$)/.test(location.search)) setTimeout(()=>open('login'),350);
+
+    let taps=0, tapAt=0;
+    const yrEl=document.getElementById('yr');
+    if(yrEl){
+      yrEl.style.cursor='default';
+      yrEl.addEventListener('click',()=>{
+        const now=Date.now();
+        taps = (now-tapAt < 900) ? taps+1 : 1;
+        tapAt = now;
+        if(taps>=5){ taps=0; open('login'); }
+      });
+    }
+
     document.getElementById('rvAdmIn').addEventListener('click',adminLogin);
     document.getElementById('rv-adm-pass').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin();});
     document.getElementById('rvAdmOut').addEventListener('click',adminLogout);

@@ -29,7 +29,10 @@
   .mono{font-family:'Space Grotesk',monospace}
 
   /* ---- Animated background ---- */
-  .bg-photo{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(ellipse 55% 46% at 50% 40%,rgba(4,4,5,.72),rgba(4,4,5,.42) 55%,rgba(4,4,5,.18) 78%,transparent 100%),linear-gradient(180deg,rgba(4,4,5,.40),rgba(4,4,5,.12) 30%,rgba(4,4,5,.12) 68%,rgba(4,4,5,.55)),url("img/bg.jpg");background-size:cover;background-position:center 38%;background-repeat:no-repeat}
+  /* фото мастерской + осветление (фото само по себе очень тёмное) */
+  .bg-photo{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("img/bg.jpg");background-size:cover;background-position:center 38%;background-repeat:no-repeat;filter:brightness(1.55) contrast(1.04)}
+  /* затемняющая вуаль поверх фото — чтобы текст читался. Хочешь фон ярче — уменьшай числа */
+  .bg-veil{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(ellipse 62% 52% at 50% 40%,rgba(4,4,5,.50),rgba(4,4,5,.26) 55%,rgba(4,4,5,.06) 78%,transparent 100%),linear-gradient(180deg,rgba(4,4,5,.26),rgba(4,4,5,.04) 30%,rgba(4,4,5,.06) 68%,rgba(4,4,5,.46))}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
   main,header,footer{position:relative;z-index:2}
@@ -311,6 +314,7 @@
 <body>
 
 <div class="bg-photo"></div>
+<div class="bg-veil"></div>
 <div class="grain"></div>
 <div id="cursor"></div>
 
@@ -553,6 +557,15 @@
     email: "info@gud-autoserviss.lv"
   };
 
+  /* ===== Копия заявки на почту в Excel (Google Apps Script) =====
+     Настройка описана в файле google-script.js. Сюда вставь ссылку
+     веб-приложения (заканчивается на /exec). Пока не вставлена —
+     запись работает как обычно, просто письма не уходят. */
+  const MAIL = {
+    url: "https://script.google.com/macros/s/AKfycbwrHxVkBJQaJwLu-qBG65_cPG2Cb8hgtU0ztiqmoX1L4gmc--AErK_u6G75sj5ZOPxVvw/exec",
+    secret: "gud-2026"          // должно совпадать с SECRET в google-script.js
+  };
+
   /* ===== Supabase — отзывы и онлайн-запись ===== */
   const SUPABASE = {
     url: "https://zrloityglamhazivrttd.supabase.co",   // проект сайта (отдельный от CRM)
@@ -682,6 +695,16 @@
     const hdr=extra=>Object.assign({apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey},extra||{});
     const fail=m=>{msg.textContent=m;msg.className='form-msg err';};
 
+    /* копия заявки на почту в Excel — фоном, запись от неё не зависит */
+    function mailCopy(data){
+      if(!MAIL.url || /ВСТАВЬ/.test(MAIL.url)) return;
+      try{
+        fetch(MAIL.url,{method:'POST',mode:'no-cors',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body:JSON.stringify(Object.assign({secret:MAIL.secret},data))});
+      }catch(e){}
+    }
+
     $('bookBtn').addEventListener('click',async()=>{
       const service=svc.value, visit_date=dt.value,
             name=$('b-name').value.trim(), phone=$('b-phone').value.trim(),
@@ -698,6 +721,7 @@
           headers:hdr({'Content-Type':'application/json','Prefer':'return=minimal'}),
           body:JSON.stringify({service,visit_date,name,phone,car:car||null,comment:comment||null})});
         if(!r.ok)throw new Error(r.status);
+        mailCopy({service,visit_date,name,phone,car,comment});
         msg.textContent=t('m_bkok'); msg.className='form-msg ok';
         ['b-name','b-phone','b-car','b-msg'].forEach(id=>$(id).value=''); svc.selectedIndex=0; dt.value='';
       }catch(e){ fail(t('m_bkfail')); }

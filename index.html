@@ -146,8 +146,9 @@
      Последние две сдвигаем к центру, получается «пирамидка» 3 + 2. */
   .work-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
   .work-item{grid-column:span 2}
-  .work-item:nth-child(4){grid-column:2/4}
-  .work-item:nth-child(5){grid-column:4/6}
+  /* «пирамидка» 3 + 2 включается сама, только если карточек ровно пять */
+  .work-item:nth-child(4):nth-last-child(2){grid-column:2/4}
+  .work-item:nth-child(5):nth-last-child(1){grid-column:4/6}
   /* квадрат: фото с телефона вертикальные, в широкой карточке от них оставалась полоска */
   .work-item{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;aspect-ratio:1/1;border:1px solid var(--border);background:#0a0b0d}
   .work-item img,.work-item video{width:100%;height:100%;object-fit:cover;object-position:center 38%;transition:.6s ease;filter:brightness(.6)}
@@ -317,8 +318,8 @@
   }
   @media(max-width:920px){
     .svc-grid,.work-grid{grid-template-columns:repeat(2,1fr)}
-    .work-item,.work-item:nth-child(4),.work-item:nth-child(5){grid-column:auto}
-    .work-item:nth-child(5){grid-column:1/-1;width:calc(50% - 9px);justify-self:center}
+    .work-item,.work-item:nth-child(4):nth-last-child(2),.work-item:nth-child(5):nth-last-child(1){grid-column:auto}
+    .work-item:nth-child(5):nth-last-child(1){grid-column:1/-1;width:calc(50% - 9px);justify-self:center}
     .stats{padding:90px 0 60px}
     .about-grid{grid-template-columns:1fr;gap:34px}
     .about-media{aspect-ratio:16/10;max-height:420px}
@@ -334,7 +335,7 @@
     .section{padding:74px 0}
     .reactor{width:min(86vw,40vh,360px)}
     .svc-grid,.work-grid,.form-grid{grid-template-columns:1fr}
-    .work-item,.work-item:nth-child(4),.work-item:nth-child(5){grid-column:auto;width:auto}
+    .work-item,.work-item:nth-child(4):nth-last-child(2),.work-item:nth-child(5):nth-last-child(1){grid-column:auto;width:auto}
     .stats-grid{grid-template-columns:minmax(0,1fr)}
     .foot-grid{grid-template-columns:1fr}
     .foot-cell{border-right:0}
@@ -583,9 +584,9 @@
   const I18N_SERVICES = {"ru": [{"t": "Техническое обслуживание", "d": "Плановое ТО, замена масла, фильтров и расходников по регламенту."}, {"t": "Компьютерная диагностика", "d": "Точное выявление неисправностей электроники и систем автомобиля."}, {"t": "Ремонт тормозной системы", "d": "Колодки, диски, суппорты, магистрали и тормозная жидкость."}, {"t": "Ремонт подвески", "d": "Амортизаторы, рычаги, сайлентблоки, ступицы и рулевое."}, {"t": "Ремонт двигателей", "d": "Диагностика и ремонт ДВС любой сложности, замена ГРМ."}, {"t": "Чистка впускных каналов", "d": "Очистка скорлупой грецкого ореха — бережно и эффективно."}, {"t": "Продажа автозапчастей", "d": "Оригинальные и проверенные запчасти от надёжных поставщиков."}], "lv": [{"t": "Tehniskā apkope", "d": "Plānotā apkope, eļļas, filtru un materiālu maiņa pēc reglamenta."}, {"t": "Datordiagnostika", "d": "Precīza elektronikas un automobiļa sistēmu bojājumu noteikšana."}, {"t": "Bremžu sistēmas remonts", "d": "Kluči, diski, supporti, maģistrāles un bremžu šķidrums."}, {"t": "Balstiekārtas remonts", "d": "Amortizatori, sviras, klusinātāji, rumbas un stūres iekārta."}, {"t": "Dzinēju remonts", "d": "Jebkuras sarežģītības dzinēju diagnostika un remonts, GSM maiņa."}, {"t": "Ieplūdes kanālu tīrīšana", "d": "Tīrīšana ar valriekstu čaumalām — saudzīgi un efektīvi."}, {"t": "Rezerves daļu tirdzniecība", "d": "Oriģinālas un pārbaudītas rezerves daļas no uzticamiem piegādātājiem."}], "en": [{"t": "Scheduled maintenance", "d": "Routine servicing, oil, filter and consumable replacement to schedule."}, {"t": "Computer diagnostics", "d": "Precise detection of faults in the electronics and vehicle systems."}, {"t": "Brake system repair", "d": "Pads, discs, calipers, lines and brake fluid."}, {"t": "Suspension repair", "d": "Shock absorbers, arms, bushings, hubs and steering."}, {"t": "Engine repair", "d": "Diagnostics and repair of engines of any complexity, timing replacement."}, {"t": "Intake port cleaning", "d": "Walnut shell blasting — gentle and highly effective."}, {"t": "Spare parts sales", "d": "Original and verified parts from reliable suppliers."}]};
   /* Карточки раздела «Наша работа». Порядок совпадает с WORK_MEDIA ниже. */
   const I18N_WORK = {
-    "ru": [{"t":"Audi A6","c":"ремонт двигателя"},{"t":"Mercedes B","c":"снятие двигателя"},{"t":"Volkswagen Golf","c":"ремонт"},{"t":"BMW","c":"ремонт"},{"t":"Чистка орехом","c":"впуск"}],
-    "lv": [{"t":"Audi A6","c":"dzinēja remonts"},{"t":"Mercedes B","c":"dzinēja izņemšana"},{"t":"Volkswagen Golf","c":"remonts"},{"t":"BMW","c":"remonts"},{"t":"Tīrīšana ar riekstiem","c":"ieplūde"}],
-    "en": [{"t":"Audi A6","c":"engine repair"},{"t":"Mercedes B","c":"engine removal"},{"t":"Volkswagen Golf","c":"repair"},{"t":"BMW","c":"repair"},{"t":"Walnut blasting","c":"intake"}]
+    "ru": [{"t":"Audi A6","c":"ремонт двигателя"},{"t":"Mercedes B","c":"снятие двигателя"},{"t":"Volkswagen Golf","c":"ремонт"},{"t":"BMW","c":"ремонт"},{"t":"Чистка орехом","c":"впуск"},{"t":"Mercedes V class","c":"ремонт"}],
+    "lv": [{"t":"Audi A6","c":"dzinēja remonts"},{"t":"Mercedes B","c":"dzinēja izņemšana"},{"t":"Volkswagen Golf","c":"remonts"},{"t":"BMW","c":"remonts"},{"t":"Tīrīšana ar riekstiem","c":"ieplūde"},{"t":"Mercedes V class","c":"remonts"}],
+    "en": [{"t":"Audi A6","c":"engine repair"},{"t":"Mercedes B","c":"engine removal"},{"t":"Volkswagen Golf","c":"repair"},{"t":"BMW","c":"repair"},{"t":"Walnut blasting","c":"intake"},{"t":"Mercedes V class","c":"repair"}]
   };
   const I18N_STATS = {"ru": [{"n": 10, "suf": "+", "l": "лет опыта", "note": null}, {"n": 1500, "suf": "+", "l": "обслуженных авто", "note": null}, {"n": 7, "suf": "", "l": "видов услуг", "note": null}, {"n": 100, "suf": "%", "l": "гарантия на работы", "note": "при выполнении всех гарантийных условий"}], "lv": [{"n": 10, "suf": "+", "l": "gadu pieredze", "note": null}, {"n": 1500, "suf": "+", "l": "apkalpoti auto", "note": null}, {"n": 7, "suf": "", "l": "pakalpojumu veidi", "note": null}, {"n": 100, "suf": "%", "l": "garantija darbiem", "note": "izpildot visus garantijas nosacījumus"}], "en": [{"n": 10, "suf": "+", "l": "years of experience", "note": null}, {"n": 1500, "suf": "+", "l": "cars serviced", "note": null}, {"n": 7, "suf": "", "l": "types of service", "note": null}, {"n": 100, "suf": "%", "l": "guarantee on work", "note": "subject to all warranty conditions"}]};
   const I18N_MQ = {"ru": ["Диагностика", "Ремонт двигателя", "Тормоза", "Подвеска", "Техобслуживание", "Запчасти", "Чистка орехом"], "lv": ["Diagnostika", "Dzinēja remonts", "Bremzes", "Balstiekārta", "Tehniskā apkope", "Rezerves daļas", "Riekstu tīrīšana"], "en": ["Diagnostics", "Engine repair", "Brakes", "Suspension", "Maintenance", "Spare parts", "Walnut blasting"]};
@@ -660,13 +661,10 @@
     ],
     /* 2. Mercedes B — снятие двигателя */
     [
-      "work/merecedes b/IMG_7853_MP.png",
-      "work/merecedes b/IMG_7854_MP.png",
       "work/merecedes b/IMG_7855_MP.png",
       "work/merecedes b/IMG_7856_MP.png",
       "work/merecedes b/IMG_7857_MP.png",
       "https://www.youtube.com/shorts/8Oz23B1ix4g",
-      "https://www.youtube.com/shorts/W8KSAyf6afY",
       "https://www.youtube.com/shorts/djjFMO3fdnQ",
       "https://www.youtube.com/shorts/9m4d_6rQxPc",
       "https://www.youtube.com/shorts/URAnjqqjUuo"
@@ -690,6 +688,10 @@
       "work/Орех/IMG_5827_MP.png",
       "work/Орех/IMG_5828_MP.png",
       "work/Орех/IMG_5829_MP.png"
+    ],
+    /* 6. Mercedes V class */
+    [
+      "https://www.youtube.com/shorts/W8KSAyf6afY"
     ]
   ];
 

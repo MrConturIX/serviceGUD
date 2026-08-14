@@ -918,7 +918,12 @@
         const r=await fetch(SUPABASE.url+'/rest/v1/bookings',{method:'POST',
           headers:hdr({'Content-Type':'application/json','Prefer':'return=minimal'}),
           body:JSON.stringify({service,visit_date,name,phone,car:car||null,comment:comment||null})});
-        if(!r.ok)throw new Error(r.status);
+        if(!r.ok){
+          /* показываем настоящую причину в консоли (F12), а не общее «не получилось» */
+          const txt=await r.text().catch(()=>'');
+          console.error('[booking] Supabase ответил '+r.status+':',txt);
+          throw new Error(r.status);
+        }
         mailCopy({service,visit_date,name,phone,car,comment});
         msg.textContent=t('m_bkok'); msg.className='form-msg ok';
         ['b-name','b-phone','b-car','b-msg'].forEach(id=>$(id).value=''); svc.selectedIndex=0; dt.value='';

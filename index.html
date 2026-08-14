@@ -274,6 +274,10 @@
   .lb.open{display:flex}
   .lb-content{max-width:1000px;width:100%;position:relative}
   #lbMedia img,#lbMedia video{width:100%;max-height:74vh;object-fit:contain;border-radius:12px;border:1px solid var(--border-2);background:#000}
+  /* ролик с YouTube: Shorts вертикальные, обычные видео 16:9 */
+  .lb-yt{margin:0 auto;height:74vh;aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;border:1px solid var(--border-2);background:#000}
+  .lb-yt.vert{aspect-ratio:9/16}
+  .lb-yt iframe{width:100%;height:100%;border:0;display:block}
   /* стрелки, счётчик и миниатюры галереи */
   .lb-nav{position:absolute;top:37%;transform:translateY(-50%);z-index:3;width:52px;height:52px;border-radius:50%;background:rgba(10,11,13,.72);border:1px solid var(--border-2);color:var(--cyan);cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:.2s}
   .lb-nav:hover{background:rgba(47,217,239,.16);box-shadow:0 0 22px rgba(47,217,239,.25)}
@@ -660,7 +664,12 @@
       "work/merecedes b/IMG_7854_MP.png",
       "work/merecedes b/IMG_7855_MP.png",
       "work/merecedes b/IMG_7856_MP.png",
-      "work/merecedes b/IMG_7857_MP.png"
+      "work/merecedes b/IMG_7857_MP.png",
+      "https://www.youtube.com/shorts/8Oz23B1ix4g",
+      "https://www.youtube.com/shorts/W8KSAyf6afY",
+      "https://www.youtube.com/shorts/djjFMO3fdnQ",
+      "https://www.youtube.com/shorts/9m4d_6rQxPc",
+      "https://www.youtube.com/shorts/URAnjqqjUuo"
     ],
     /* 3. Volkswagen Golf — фото нет, пока заглушка. Ждём ссылку на YouTube */
     [],
@@ -680,9 +689,16 @@
     ]
   ];
 
-  const isVid   = s => /\.(mp4|webm|ogv|mov|m4v)(\?|#|$)/i.test(s);
-  const mSrc    = m => typeof m==='string' ? m : (m&&m.src)||'';
-  const mPoster = m => (m && typeof m==='object' && m.poster) ? m.poster : '';
+  const YT_RE    = /(?:youtube\.com\/(?:shorts\/|watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/i;
+  const ytId     = s => { const m=String(s).match(YT_RE); return m ? m[1] : ''; };
+  const ytVert   = s => /\/shorts\//i.test(String(s));          // Shorts — вертикальные
+  const ytThumb  = s => 'https://i.ytimg.com/vi/'+ytId(s)+'/hqdefault.jpg';
+  const isFile   = s => /\.(mp4|webm|ogv|mov|m4v)(\?|#|$)/i.test(s);
+  const mSrc     = m => typeof m==='string' ? m : (m&&m.src)||'';
+  const mPoster  = m => (m && typeof m==='object' && m.poster) ? m.poster : '';
+  /* 'yt' — ролик с YouTube, 'video' — файл mp4, 'image' — фото */
+  const mKind    = m => { const s=mSrc(m); return ytId(s) ? 'yt' : (isFile(s) ? 'video' : 'image'); };
+  const isVid    = s => !!ytId(s) || isFile(s);
   /* в путях есть пробелы и русские буквы — кодируем каждую часть отдельно */
   const mUrl    = p => /^(https?:|\/)/i.test(p) ? p : 'img/'+p.split('/').map(encodeURIComponent).join('/');
 
@@ -724,7 +740,10 @@
       let thumb;
       if(!cover){                                   // файлов ещё нет — заглушка
         thumb=`<img loading="lazy" src="${img('w'+w.n,600,450)}" alt="${w.t}">`;
-      }else if(isVid(mSrc(cover))){
+      }else if(mKind(cover)==='yt'){
+        const p=mPoster(cover);
+        thumb=`<img loading="lazy" src="${p?mUrl(p):ytThumb(mSrc(cover))}" alt="${w.t}">`;
+      }else if(mKind(cover)==='video'){
         const p=mPoster(cover);
         thumb = p ? `<img loading="lazy" src="${mUrl(p)}" alt="${w.t}">`
                   : `<video src="${mUrl(mSrc(cover))}#t=0.5" muted playsinline preload="metadata"></video>`;
@@ -808,20 +827,28 @@
       lbMedia.innerHTML=`<img src="${img('placeholder',1200,800)}" alt="">`;
       lbThumbs.innerHTML=''; return;
     }
-    const m=GAL[GI], src=mUrl(mSrc(m)), pos=mPoster(m);
-    lbMedia.innerHTML = isVid(mSrc(m))
-      ? `<video controls autoplay playsinline preload="metadata"${pos?` poster="${mUrl(pos)}"`:''} src="${src}"></video>`
-      : `<img src="${src}" alt="">`;
+    const m=GAL[GI], raw=mSrc(m), kind=mKind(m), pos=mPoster(m);
+    if(kind==='yt'){
+      lbMedia.innerHTML=`<div class="lb-yt${ytVert(raw)?' vert':''}"><iframe`+
+        ` src="https://www.youtube.com/embed/${ytId(raw)}?autoplay=1&rel=0&playsinline=1"`+
+        ` title="GUD Autoserviss" loading="lazy" allowfullscreen`+
+        ` allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe></div>`;
+    }else if(kind==='video'){
+      lbMedia.innerHTML=`<video controls autoplay playsinline preload="metadata"${pos?` poster="${mUrl(pos)}"`:''} src="${mUrl(raw)}"></video>`;
+    }else{
+      lbMedia.innerHTML=`<img src="${mUrl(raw)}" alt="">`;
+    }
     renderThumbs();
   }
   function renderThumbs(){
     if(GAL.length<2){lbThumbs.innerHTML='';return;}
+    const play=`<span class="vid"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>`;
     lbThumbs.innerHTML=GAL.map((m,i)=>{
-      const s=mSrc(m), v=isVid(s), p=mPoster(m);
-      const inner = v
-        ? (p?`<img src="${mUrl(p)}" alt="">`:`<video src="${mUrl(s)}#t=0.5" muted preload="metadata"></video>`)+
-          `<span class="vid"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>`
-        : `<img src="${mUrl(s)}" alt="">`;
+      const s=mSrc(m), k=mKind(m), p=mPoster(m);
+      let inner;
+      if(k==='yt')          inner=`<img src="${p?mUrl(p):ytThumb(s)}" alt="">`+play;
+      else if(k==='video')  inner=(p?`<img src="${mUrl(p)}" alt="">`:`<video src="${mUrl(s)}#t=0.5" muted preload="metadata"></video>`)+play;
+      else                  inner=`<img src="${mUrl(s)}" alt="">`;
       return `<div class="lb-thumb${i===GI?' on':''}" data-i="${i}">${inner}</div>`;
     }).join('');
   }

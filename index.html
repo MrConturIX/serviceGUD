@@ -880,14 +880,27 @@
     const hdr=extra=>Object.assign({apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey},extra||{});
     const fail=m=>{msg.textContent=m;msg.className='form-msg err';};
 
-    /* копия заявки на почту в Excel — фоном, запись от неё не зависит */
+    /* Копия заявки на почту в Excel — фоном, сама запись от неё не зависит.
+       В консоли браузера (F12) видно, ушёл запрос или нет. */
     function mailCopy(data){
-      if(!MAIL.url || /ВСТАВЬ/.test(MAIL.url)) return;
+      if(!MAIL.url || /ВСТАВЬ/.test(MAIL.url)){ console.warn('[mail] MAIL.url не заполнен'); return; }
+      const payload=JSON.stringify(Object.assign({secret:MAIL.secret},data));
+      /* 1) sendBeacon — самый надёжный путь к Apps Script: простой POST,
+            без preflight, браузер не обрывает его при уходе со страницы */
       try{
-        fetch(MAIL.url,{method:'POST',mode:'no-cors',
-          headers:{'Content-Type':'text/plain;charset=utf-8'},
-          body:JSON.stringify(Object.assign({secret:MAIL.secret},data))});
-      }catch(e){}
+        const blob=new Blob([payload],{type:'text/plain;charset=utf-8'});
+        if(navigator.sendBeacon && navigator.sendBeacon(MAIL.url,blob)){
+          console.log('[mail] заявка отправлена (beacon)');
+          return;
+        }
+      }catch(e){ console.warn('[mail] beacon не сработал',e); }
+      /* 2) запасной вариант */
+      try{
+        fetch(MAIL.url,{method:'POST',mode:'no-cors',keepalive:true,
+          headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload})
+          .then(()=>console.log('[mail] заявка отправлена (fetch)'))
+          .catch(err=>console.warn('[mail] не удалось отправить',err));
+      }catch(e){ console.warn('[mail] не удалось отправить',e); }
     }
 
     $('bookBtn').addEventListener('click',async()=>{
